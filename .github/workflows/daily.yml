@@ -1,0 +1,63 @@
+name: Dnevno čitanje za reTerminal E1004
+
+on:
+  schedule:
+    # 00:05 po ljetnom vremenu (CEST) i 00:05 po zimskom vremenu (CET)
+    - cron: '5 22 * * *'
+    - cron: '5 23 * * *'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Datum (YYYY-MM-DD, ostavi prazno za danas)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Preuzmi repozitorij
+        uses: actions/checkout@v4
+
+      - name: Postavi Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instaliraj hrvatske fontove
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq fonts-liberation fonts-dejavu-core
+
+      - name: Instaliraj biblioteke za sliku
+        run: npm init -y && npm install sharp @resvg/resvg-js
+
+      - name: Generiraj današnji .e6 i PNG
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          DATE_OVERRIDE: ${{ github.event.inputs.date || '' }}
+        run: node scripts/generate.mjs
+
+      - name: Pripremi GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Učitaj datoteke za objavu
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Objavi na GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
