@@ -1,0 +1,12 @@
+{
+  "serifFont": "Nunito",
+  "sansFont": "Nunito",
+  "artHeightPortrait": 610,
+  "dateSize": 38,
+  "metaSize": 26,
+  "titleSize": 64,
+  "summarySize": 44,
+  "verseSize": 38,
+  "reflectionSize": 32,
+  "showReflection": true
+}
