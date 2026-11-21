@@ -3,8 +3,7 @@ name: Dnevno čitanje za reTerminal E1004
 on:
   schedule:
     # 00:05 po ljetnom vremenu (CEST) i 00:05 po zimskom vremenu (CET)
-    - cron: '5 22 * * *'
-    - cron: '5 23 * * *'
+  - cron: '15 0 * * *'
   workflow_dispatch:
     inputs:
       date:
